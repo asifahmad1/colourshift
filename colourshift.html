@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ColourShift — HEX, RGB &amp; HSL Converter</title>
+<style>
+:root{
+  --emerald:#103E32;
+  --emerald-deep:#0B2B23;
+  --lime:#DCF5B5;
+  --lime-soft:#EFF9DC;
+  --bg:#F7F8F2;
+  --panel:#FFFFFF;
+  --ink:#1C2B25;
+  --ink-soft:#4A5A52;
+  --line:#DDE4D8;
+  --error:#B3261E;
+  --error-bg:#FDECEA;
+  --radius:14px;
+  --gap:18px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.5;
+}
+header.site{
+  background:var(--emerald);
+  color:#fff;
+  padding:28px 20px 24px;
+  text-align:center;
+}
+header.site h1{
+  margin:0 0 6px;
+  font-size:clamp(1.5rem,4vw,2.2rem);
+  letter-spacing:.2px;
+}
+header.site h1 .dot{color:var(--lime)}
+header.site p{
+  margin:0 auto;
+  max-width:640px;
+  color:var(--lime);
+  font-size:1.02rem;
+}
+main{
+  max-width:1080px;
+  margin:0 auto;
+  padding:24px 16px 40px;
+}
+.hero{
+  text-align:center;
+  margin:6px 0 22px;
+}
+.hero h2{
+  margin:0 0 6px;
+  font-size:clamp(1.35rem,3.4vw,1.9rem);
+  color:var(--emerald);
+}
+.hero p{margin:0;color:var(--ink-soft);max-width:620px;margin-left:auto;margin-right:auto}
+.grid{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:var(--gap);
+  align-items:start;
+}
+@media (max-width:860px){
+  .grid{grid-template-columns:1fr}
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:0 1px 3px rgba(16,62,50,.06);
+}
+.card h3{
+  margin:0 0 12px;
+  font-size:1.02rem;
+  color:var(--emerald);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  font-size:.85rem;
+}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:600;margin-bottom:6px;font-size:.95rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=number]{
+  font:inherit;
+  padding:10px 12px;
+  border:1.5px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+  color:var(--ink);
+  width:100%;
+  min-height:44px;
+}
+input[type=text]:focus-visible,input[type=number]:focus-visible,
+input[type=range]:focus-visible,button:focus-visible,input[type=color]:focus-visible{
+  outline:3px solid var(--lime);
+  outline-offset:2px;
+  border-color:var(--emerald);
+}
+input[aria-invalid="true"]{border-color:var(--error);background:var(--error-bg)}
+.err{
+  display:none;
+  margin-top:6px;
+  font-size:.86rem;
+  color:var(--error);
+}
+.err.show{display:block}
+.err::before{content:"⚠ "}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:480px){.trio{grid-template-columns:1fr}}
+.trio .cell label{font-size:.82rem;color:var(--ink-soft);font-weight:600;margin-bottom:4px}
+.slider-row{display:grid;grid-template-columns:1fr 84px;gap:10px;align-items:center;margin-top:8px}
+.slider-row label{font-size:.82rem;color:var(--ink-soft);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--emerald);min-height:32px}
+.hint{font-size:.84rem;color:var(--ink-soft);margin-top:4px}
+.btn{
+  font:inherit;
+  font-weight:600;
+  border:2px solid var(--emerald);
+  background:#fff;
+  color:var(--emerald);
+  border-radius:10px;
+  padding:10px 16px;
+  min-height:44px;
+  cursor:pointer;
+  transition:background .15s ease,transform .05s ease;
+}
+.btn:hover{background:var(--lime-soft)}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--emerald);color:#fff}
+.btn.primary:hover{background:var(--emerald-deep)}
+.btn.small{padding:8px 12px;min-height:40px;font-size:.9rem}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.swatch-big{
+  height:190px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  margin-bottom:14px;
+  transition:background-color .12s ease;
+}
+.sample{
+  border-radius:12px;
+  border:1px solid var(--line);
+  padding:18px;
+  margin-bottom:14px;
+  transition:background-color .12s ease,color .12s ease;
+}
+.sample .t1{font-size:1.25rem;font-weight:700;margin:0 0 4px}
+.sample .t2{font-size:.95rem;margin:0;opacity:.85}
+.out-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}
+.out{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:.95rem;word-break:break-all}
+.copy-note{font-size:.85rem;color:var(--ink-soft)}
+textarea.fallback{
+  width:100%;min-height:120px;font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;
+  padding:10px;border:1.5px solid var(--emerald);border-radius:10px;background:#fff;
+}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sw{
+  width:44px;height:44px;border-radius:10px;border:2px solid var(--line);
+  cursor:pointer;padding:0;
+}
+.sw:hover{border-color:var(--emerald)}
+.sw:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+.picker-row{display:flex;align-items:center;gap:12px}
+input[type=color]{
+  width:64px;height:48px;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:4px;cursor:pointer;
+}
+footer.site{
+  text-align:center;
+  padding:20px;
+  color:var(--ink-soft);
+  font-size:.88rem;
+  border-top:1px solid var(--line);
+  background:var(--panel);
+}
+footer.site strong{color:var(--emerald)}
+.status{font-size:.9rem;color:var(--ink-soft);margin-top:8px;min-height:1.4em}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <h1>ColourShift<span class="dot">.</span></h1>
+  <p>HEX, RGB &amp; HSL Converter — part of Asif SaaS Studio</p>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>One colour. Every format.</h2>
+    <p>Type a colour in any format and watch it convert instantly — HEX, RGB and HSL stay in sync, with a live preview you can copy straight into your CSS.</p>
+  </div>
+
+  <div class="grid">
+    <!-- CONTROLS -->
+    <section class="card" aria-label="Colour inputs">
+      <h3>Inputs</h3>
+
+      <div class="field">
+        <label for="paste">Paste colour value</label>
+        <input type="text" id="paste" placeholder="#3498DB · rgb(52, 152, 219) · hsl(204, 70%, 53%)" autocomplete="off" spellcheck="false">
+        <div class="err" id="paste-err" role="alert"></div>
+        <div class="hint">Accepts HEX, <code>rgb(…)</code> and <code>hsl(…)</code> notation.</div>
+      </div>
+
+      <div class="field">
+        <label for="hex">HEX</label>
+        <input type="text" id="hex" value="#3498DB" autocomplete="off" spellcheck="false" maxlength="7" aria-describedby="hex-err">
+        <div class="err" id="hex-err" role="alert"></div>
+        <div class="hint">3 or 6 digits, with or without <code>#</code> (e.g. <code>#ABC</code>, <code>3498db</code>).</div>
+      </div>
+
+      <div class="field">
+        <label>RGB <span class="hint" style="display:inline">— 0 to 255 each</span></label>
+        <div class="trio">
+          <div class="cell"><label for="r">Red</label><input type="number" id="r" min="0" max="255" step="1" value="52"></div>
+          <div class="cell"><label for="g">Green</label><input type="number" id="g" min="0" max="255" step="1" value="152"></div>
+          <div class="cell"><label for="b">Blue</label><input type="number" id="b" min="0" max="255" step="1" value="219"></div>
+        </div>
+        <div class="err" id="rgb-err" role="alert"></div>
+        <div class="slider-row"><label for="rs">Red</label><input type="range" id="rs" min="0" max="255" step="1" value="52"></div>
+        <div class="slider-row"><label for="gs">Green</label><input type="range" id="gs" min="0" max="255" step="1" value="152"></div>
+        <div class="slider-row"><label for="bs">Blue</label><input type="range" id="bs" min="0" max="255" step="1" value="219"></div>
+      </div>
+
+      <div class="field">
+        <label>HSL <span class="hint" style="display:inline">— hue 0–360°, sat/light 0–100%</span></label>
+        <div class="trio">
+          <div class="cell"><label for="h">Hue °</label><input type="number" id="h" min="0" max="360" step="any" value="204"></div>
+          <div class="cell"><label for="s">Sat %</label><input type="number" id="s" min="0" max="100" step="any" value="70"></div>
+          <div class="cell"><label for="l">Light %</label><input type="number" id="l" min="0" max="100" step="any" value="53"></div>
+        </div>
+        <div class="err" id="hsl-err" role="alert"></div>
+        <div class="slider-row"><label for="hs">Hue</label><input type="range" id="hs" min="0" max="360" step="1" value="204"></div>
+        <div class="slider-row"><label for="ss">Saturation</label><input type="range" id="ss" min="0" max="100" step="1" value="70"></div>
+        <div class="slider-row"><label for="ls">Lightness</label><input type="range" id="ls" min="0" max="100" step="1" value="53"></div>
+      </div>
+
+      <div class="field">
+        <label for="picker">Colour picker</label>
+        <div class="picker-row">
+          <input type="color" id="picker" value="#3498db">
+          <span class="hint">Pick visually — every field updates together.</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="random" type="button">🎲 Random colour</button>
+        <button class="btn" id="reset" type="button">↺ Reset</button>
+      </div>
+
+      <div class="field" style="margin-top:16px">
+        <label>Presets</label>
+        <div class="swatches" id="presets" role="group" aria-label="Preset colours"></div>
+      </div>
+
+      <div class="field">
+        <label>Recent <span class="hint" style="display:inline">— this session only</span></label>
+        <div class="swatches" id="recent" role="group" aria-label="Recent colours"></div>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="card" aria-label="Live preview and copy">
+      <h3>Preview</h3>
+      <div class="swatch-big" id="swatch" role="img" aria-label="Large preview of the selected colour"></div>
+      <div class="sample" id="sample">
+        <p class="t1">Sample heading text</p>
+        <p class="t2">Body text on your selected colour — check readability at a glance.</p>
+      </div>
+
+      <h3 style="margin-top:18px">Copy as CSS</h3>
+      <div class="out-row"><div class="out" id="out-hex">#3498DB</div><button class="btn small" data-copy="hex" type="button">Copy HEX</button></div>
+      <div class="out-row"><div class="out" id="out-rgb">rgb(52, 152, 219)</div><button class="btn small" data-copy="rgb" type="button">Copy RGB</button></div>
+      <div class="out-row"><div class="out" id="out-hsl">hsl(204.07, 69.87%, 53.14%)</div><button class="btn small" data-copy="hsl" type="button">Copy HSL</button></div>
+      <div class="btn-row">
+        <button class="btn primary" id="copy-all" type="button">⧉ Copy all formats</button>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+      <div id="fallback-wrap" style="display:none;margin-top:10px">
+        <label for="fallback"><strong>Clipboard unavailable</strong> — select the text below and copy it manually (Ctrl+C / ⌘C):</label>
+        <textarea class="fallback" id="fallback" readonly></textarea>
+      </div>
+      <p class="copy-note" style="margin-top:14px">🔒 <strong>Privacy:</strong> Colour conversions happen in your browser. No colour values are uploaded.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="site">
+  <strong>ColourShift</strong> v1.0 · Asif SaaS Studio · Design tools
+</footer>
+
+<script>
+"use strict";
+/*__CONV_START__*/
+/* Colour conversion library — standard sRGB formulas. No DOM access. */
+function clampNum(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+function parseHex(str){
+  var s = String(str).trim().replace(/^#/, "");
+  if(!/^[0-9a-fA-F]+$/.test(s)) return null;
+  if(s.length === 3) s = s[0]+s[0]+s[1]+s[1]+s[2]+s[2];
+  if(s.length !== 6) return null;
+  return {
+    r: parseInt(s.slice(0,2),16),
+    g: parseInt(s.slice(2,4),16),
+    b: parseInt(s.slice(4,6),16)
+  };
+}
+
+function rgbToHex(r,g,b){
+  function h(n){
+    return clampNum(Math.round(n),0,255).toString(16).padStart(2,"0").toUpperCase();
+  }
+  return "#"+h(r)+h(g)+h(b);
+}
+
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  var max=Math.max(r,g,b), min=Math.min(r,g,b);
+  var h=0, s=0, l=(max+min)/2, d=max-min;
+  if(d!==0){
+    s = d/(1-Math.abs(2*l-1));
+    if(max===r) h = 60*(((g-b)/d)%6);
+    else if(max===g) h = 60*((b-r)/d+2);
+    else h = 60*((r-g)/d+4);
+    if(h<0) h+=360;
+  }
+  return {h:h, s:s*100, l:l*100};
+}
+
+function hslToRgb(h,s,l){
+  h = ((Number(h)%360)+360)%360; /* 360° ≡ 0° */
+  s = clampNum(Number(s),0,100)/100;
+  l = clampNum(Number(l),0,100)/100;
+  var c = (1-Math.abs(2*l-1))*s;
+  var x = c*(1-Math.abs(((h/60)%2)-1));
+  var m = l-c/2, rp=0, gp=0, bp=0;
+  if(h<60){rp=c;gp=x;}
+  else if(h<120){rp=x;gp=c;}
+  else if(h<180){gp=c;bp=x;}
+  else if(h<240){gp=x;bp=c;}
+  else if(h<300){rp=x;bp=c;}
+  else {rp=c;bp=x;}
+  return {r:(rp+m)*255, g:(gp+m)*255, b:(bp+m)*255};
+}
+
+/* Parse a pasted colour value: #3498DB | rgb(52,152,219) | hsl(204,70%,53%) */
+function parsePasted(str){
+  var t = String(str).trim();
+  if(t==="") return null;
+  if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(t)) return parseHex(t);
+  var m = t.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*[\d.]+\s*)?\)$/i);
+  if(m){
+    var r=+m[1], g=+m[2], b=+m[3];
+    if(r<=255&&g<=255&&b<=255) return {r:r,g:g,b:b};
+    return null;
+  }
+  m = t.match(/^hsla?\(\s*(\d{1,3}(?:\.\d+)?)\s*,\s*(\d{1,3}(?:\.\d+)?)%\s*,\s*(\d{1,3}(?:\.\d+)?)%\s*(?:,\s*[\d.]+\s*)?\)$/i);
+  if(m){
+    var hh=+m[1], ss=+m[2], ll=+m[3];
+    if(hh<=360&&ss<=100&&ll<=100) return hslToRgb(hh,ss,ll);
+    return null;
+  }
+  return null;
+}
+
+/* Format a number with at most 2 decimals, trimming trailing zeros. */
+function fmt2(n){
+  var r = Math.round(n*100)/100;
+  return String(r);
+}
+/*__CONV_END__*/
+
+/* ---------- App state ---------- */
+var state = { r:52, g:152, b:219 }; /* #3498DB — last VALID colour */
+var recent = [];                     /* session-only, in memory */
+var suppress = false;                /* guard while programmatically syncing */
+
+var $ = function(id){ return document.getElementById(id); };
+var els = {
+  paste:$("paste"), pasteErr:$("paste-err"),
+  hex:$("hex"), hexErr:$("hex-err"),
+  r:$("r"), g:$("g"), b:$("b"), rgbErr:$("rgb-err"),
+  rs:$("rs"), gs:$("gs"), bs:$("bs"),
+  h:$("h"), s:$("s"), l:$("l"), hslErr:$("hsl-err"),
+  hs:$("hs"), ss:$("ss"), ls:$("ls"),
+  picker:$("picker"),
+  swatch:$("swatch"), sample:$("sample"),
+  outHex:$("out-hex"), outRgb:$("out-rgb"), outHsl:$("out-hsl"),
+  status:$("status"), fallbackWrap:$("fallback-wrap"), fallback:$("fallback"),
+  presets:$("presets"), recentBox:$("recent")
+};
+
+var PRESETS = ["#FF0000","#00FF00","#0000FF","#FFFF00","#FF00FF","#00FFFF",
+               "#FFFFFF","#808080","#000000","#3498DB","#E67E22","#2ECC71"];
+
+function showErr(el,msg){
+  el.textContent = msg;
+  el.classList.add("show");
+}
+function clearErr(el,inputEl){
+  el.textContent = "";
+  el.classList.remove("show");
+  if(inputEl) inputEl.removeAttribute("aria-invalid");
+}
+function markInvalid(inputEl,errEl,msg){
+  inputEl.setAttribute("aria-invalid","true");
+  showErr(errEl,msg);
+}
+
+function cssStrings(){
+  var hex = rgbToHex(state.r,state.g,state.b);
+  var hsl = rgbToHsl(state.r,state.g,state.b);
+  return {
+    hex: hex,
+    rgb: "rgb("+Math.round(state.r)+", "+Math.round(state.g)+", "+Math.round(state.b)+")",
+    hsl: "hsl("+fmt2(hsl.h)+", "+fmt2(hsl.s)+"%, "+fmt2(hsl.l)+"%)"
+  };
+}
+
+function luminance(r,g,b){
+  function lin(c){ c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); }
+  return 0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+}
+
+function render(){
+  suppress = true;
+  var css = cssStrings();
+  var hex = css.hex;
+  var hsl = rgbToHsl(state.r,state.g,state.b);
+
+  els.hex.value = hex;
+  els.r.value = Math.round(state.r); els.g.value = Math.round(state.g); els.b.value = Math.round(state.b);
+  els.rs.value = Math.round(state.r); els.gs.value = Math.round(state.g); els.bs.value = Math.round(state.b);
+  els.h.value = fmt2(hsl.h); els.s.value = fmt2(hsl.s); els.l.value = fmt2(hsl.l);
+  els.hs.value = Math.round(hsl.h); els.ss.value = Math.round(hsl.s); els.ls.value = Math.round(hsl.l);
+  els.picker.value = hex.toLowerCase();
+
+  els.swatch.style.backgroundColor = hex;
+  els.swatch.setAttribute("aria-label","Large preview of colour "+hex);
+  els.sample.style.backgroundColor = hex;
+  var dark = luminance(state.r,state.g,state.b) > 0.35;
+  els.sample.style.color = dark ? "#1C2B25" : "#FFFFFF";
+
+  els.outHex.textContent = css.hex;
+  els.outRgb.textContent = css.rgb;
+  els.outHsl.textContent = css.hsl;
+  suppress = false;
+}
+
+function pushRecent(hex){
+  var i = recent.indexOf(hex);
+  if(i!==-1) recent.splice(i,1);
+  recent.unshift(hex);
+  if(recent.length>10) recent.length = 10;
+  renderRecent();
+}
+function renderRecent(){
+  els.recentBox.innerHTML = "";
+  if(!recent.length){
+    var span = document.createElement("span");
+    span.className = "hint";
+    span.textContent = "Colours you convert will appear here.";
+    els.recentBox.appendChild(span);
+    return;
+  }
+  recent.forEach(function(hex){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "sw";
+    b.style.backgroundColor = hex;
+    b.title = hex;
+    b.setAttribute("aria-label","Use recent colour "+hex);
+    b.addEventListener("click",function(){
+      var c = parseHex(hex);
+      if(c) setColor(c.r,c.g,c.b);
+    });
+    els.recentBox.appendChild(b);
+  });
+}
+function renderPresets(){
+  PRESETS.forEach(function(hex){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "sw";
+    b.style.backgroundColor = hex;
+    b.title = hex;
+    b.setAttribute("aria-label","Use preset colour "+hex);
+    b.addEventListener("click",function(){
+      var c = parseHex(hex);
+      if(c) setColor(c.r,c.g,c.b);
+    });
+    els.presets.appendChild(b);
+  });
+}
+
+function setColor(r,g,b){
+  state.r = clampNum(r,0,255);
+  state.g = clampNum(g,0,255);
+  state.b = clampNum(b,0,255);
+  render();
+  pushRecent(rgbToHex(state.r,state.g,state.b));
+}
+
+/* ---------- Input handlers ---------- */
+function onHex(){
+  if(suppress) return;
+  var v = els.hex.value.trim();
+  clearErr(els.hexErr,els.hex);
+  if(v===""){ markInvalid(els.hex,els.hexErr,"HEX value is required."); return; }
+  var c = parseHex(v);
+  if(!c){ markInvalid(els.hex,els.hexErr,"Invalid HEX — use 3 or 6 hex digits (0–9, A–F), e.g. #ABC or #3498DB."); return; }
+  setColor(c.r,c.g,c.b);
+}
+
+function readNum(el){ var v = el.value.trim(); return v==="" ? null : Number(v); }
+
+function onRgb(){
+  if(suppress) return;
+  clearErr(els.rgbErr); ["r","g","b"].forEach(function(k){ els[k].removeAttribute("aria-invalid"); });
+  var r = readNum(els.r), g = readNum(els.g), b = readNum(els.b);
+  if(r===null||g===null||b===null){ showErr(els.rgbErr,"All three RGB fields are required."); return; }
+  var bad = [r,g,b].some(function(n){ return !isFinite(n) || Math.round(n)!==n || n<0 || n>255; });
+  if(bad){ showErr(els.rgbErr,"RGB values must be whole numbers from 0 to 255."); return; }
+  setColor(r,g,b);
+}
+
+function onHsl(){
+  if(suppress) return;
+  clearErr(els.hslErr); ["h","s","l"].forEach(function(k){ els[k].removeAttribute("aria-invalid"); });
+  var h = readNum(els.h), s = readNum(els.s), l = readNum(els.l);
+  if(h===null||s===null||l===null){ showErr(els.hslErr,"Hue, saturation and lightness are all required."); return; }
+  if(![h,s,l].every(isFinite)){ showErr(els.hslErr,"Please enter numbers only."); return; }
+  if(h<0||h>360){ showErr(els.hslErr,"Hue must be between 0 and 360 degrees (360 = 0)."); return; }
+  if(s<0||s>100||l<0||l>100){ showErr(els.hslErr,"Saturation and lightness must be between 0 and 100%."); return; }
+  var c = hslToRgb(h,s,l);
+  setColor(c.r,c.g,c.b);
+}
+
+function onPaste(){
+  var v = els.paste.value;
+  clearErr(els.pasteErr,els.paste);
+  if(v.trim()==="") return;
+  var c = parsePasted(v);
+  if(!c){ markInvalid(els.paste,els.pasteErr,"Not recognised — try #3498DB, rgb(52, 152, 219) or hsl(204, 70%, 53%)."); return; }
+  setColor(c.r,c.g,c.b);
+  els.status.textContent = "Pasted colour applied.";
+}
+
+function onPicker(){
+  if(suppress) return;
+  var c = parseHex(els.picker.value);
+  if(c) setColor(c.r,c.g,c.b);
+}
+
+/* ---------- Copy ---------- */
+function showFallback(text){
+  els.fallbackWrap.style.display = "block";
+  els.fallback.value = text;
+  els.fallback.focus();
+  els.fallback.select();
+  els.status.textContent = "Clipboard is blocked here — copy the selected text manually (Ctrl+C / ⌘C).";
+}
+function copyText(text,label){
+  function done(){
+    els.status.textContent = label+" copied to clipboard.";
+    els.fallbackWrap.style.display = "none";
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done,function(){ showFallback(text); });
+  } else {
+    showFallback(text);
+  }
+}
+
+/* ---------- Wire up ---------- */
+els.hex.addEventListener("change",onHex);
+["r","g","b"].forEach(function(k){ els[k].addEventListener("change",onRgb); });
+["h","s","l"].forEach(function(k){ els[k].addEventListener("change",onHsl); });
+els.paste.addEventListener("change",onPaste);
+els.picker.addEventListener("input",onPicker);
+
+els.rs.addEventListener("input",function(){ if(!suppress) setColor(+els.rs.value,state.g,state.b); });
+els.gs.addEventListener("input",function(){ if(!suppress) setColor(state.r,+els.gs.value,state.b); });
+els.bs.addEventListener("input",function(){ if(!suppress) setColor(state.r,state.g,+els.bs.value); });
+els.hs.addEventListener("input",function(){
+  if(suppress) return;
+  var hsl = rgbToHsl(state.r,state.g,state.b);
+  var c = hslToRgb(+els.hs.value,hsl.s,hsl.l);
+  setColor(c.r,c.g,c.b);
+});
+els.ss.addEventListener("input",function(){
+  if(suppress) return;
+  var hsl = rgbToHsl(state.r,state.g,state.b);
+  var c = hslToRgb(hsl.h,+els.ss.value,hsl.l);
+  setColor(c.r,c.g,c.b);
+});
+els.ls.addEventListener("input",function(){
+  if(suppress) return;
+  var hsl = rgbToHsl(state.r,state.g,state.b);
+  var c = hslToRgb(hsl.h,hsl.s,+els.ls.value);
+  setColor(c.r,c.g,c.b);
+});
+
+document.querySelectorAll("[data-copy]").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var css = cssStrings();
+    var key = btn.getAttribute("data-copy");
+    copyText(css[key],key.toUpperCase());
+  });
+});
+$("copy-all").addEventListener("click",function(){
+  var css = cssStrings();
+  copyText(css.hex+"\n"+css.rgb+"\n"+css.hsl,"All formats");
+});
+$("random").addEventListener("click",function(){
+  setColor(Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256));
+  els.status.textContent = "Random colour generated.";
+});
+$("reset").addEventListener("click",function(){
+  ["paste-err","hex-err","rgb-err","hsl-err"].forEach(function(id){ clearErr($(id)); });
+  ["hex","r","g","b","h","s","l","paste"].forEach(function(id){ els[id].removeAttribute("aria-invalid"); });
+  els.paste.value = "";
+  setColor(52,152,219);
+  els.status.textContent = "Reset to #3498DB.";
+});
+
+/* ---------- Init ---------- */
+renderPresets();
+renderRecent();
+render();
+pushRecent("#3498DB");
+</script>
+</body>
+</html>
